@@ -28,6 +28,9 @@
 #pragma once
 #include "SceneIDs.h"
 #include "SceneTypes.slang"
+//=============== Add by Hanlin ===================
+#include "Scene/ObjectBVH/MeshInstance.slang"
+//=============== End =========================
 #include "HitInfo.h"
 #include "Animation/Animation.h"
 #include "Animation/AnimationController.h"
@@ -42,6 +45,7 @@
 #include "Volume/GridVolume.h"
 #include "Volume/Grid.h"
 #include "SDFs/SDFGrid.h"
+#include "ObjectBVH/ObjectBVH.h"
 
 #include "Core/Macros.h"
 #include "Core/API/VAO.h"
@@ -58,6 +62,7 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+
 
 #include "Utils/Math/Matrix/Matrix.h"
 
@@ -1213,6 +1218,33 @@ namespace Falcor
         std::vector<MeshGroup> mMeshGroups;                         ///< Groups of meshes. Each group maps to a BLAS for ray tracing.
         std::vector<std::string> mMeshNames;                        ///< Mesh names, indxed by mesh ID
         std::vector<Node> mSceneGraph;                              ///< For each index i, the array element indicates the parent node. Indices are in relation to mLocalToWorldMatrices.
+
+        //================= Hanlin Added =========================
+
+        //Scene Mesh BVH
+        std::vector<MeshInstanceData> mMeshInstance;
+        std::vector<MeshObjectTriangle> mSceneTriangleList;   ///< store all triangle in the scene for building BVH Tree.
+        std::vector<uint32_t> mMeshObjectActiveTriangles;
+        std::vector<uint32_t> mMeshObjectTriangleToActiveList;       ///< Mapping of all light triangles to index in mActiveTriangleList.
+
+        BVHNode* sceneRootNode;
+
+        Buffer::SharedPtr     mMeshObjTriangleData;         ///< Per-triangle geometry data for mesh triangles (mMeshObjTriangleCount elements).
+        Buffer::SharedPtr     mpMeshObjActiveTriangleList;   ///< List of active (non-culled) emissive triangle.
+        Buffer::SharedPtr     mpMeshObjToActiveList;      ///< Mapping of all light triangles to index in mActiveTriangleList.
+        Buffer::SharedPtr     mpMeshObjData;
+
+        ComputePass::SharedPtr  mpMeshObjTriangleListBuilder;
+        ComputePass::SharedPtr  mpMeshObjTrianglePositionUpdater;
+        GpuFence::SharedPtr        mpObjectStagingFence;
+
+        void initBuffer(); //initiate compute shader pass
+
+        void buildTriangle();
+        void createMeshObjData();
+        void buildMeshObjTriangleData(RenderContext* pRenderContext,const Scene& scene);
+        void updateActiveTriangleList();
+        //================= End Add ============================
 
         // Displacement mapping.
         struct

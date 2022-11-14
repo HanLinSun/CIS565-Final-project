@@ -435,6 +435,10 @@ target_sources(Falcor PRIVATE
     Scene/Material/PBRT/PBRTCoatedConductorMaterial.cpp
     Scene/Material/PBRT/PBRTCoatedDiffuseMaterial.h
     Scene/Material/PBRT/PBRTCoatedDiffuseMaterial.cpp
+    
+    Scene/ObjectBVH/ObjectBVH.h
+    Scene/ObjectBVH/MeshInstance.slang
+    Scene/ObjectBVH/BuildMeshObjTriangleList.cs.slang
 
     Scene/SDFs/NormalizedDenseSDFGrid/NDSDFGrid.cpp
     Scene/SDFs/NormalizedDenseSDFGrid/NDSDFGrid.h

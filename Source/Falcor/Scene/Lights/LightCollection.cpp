@@ -180,7 +180,6 @@ namespace Falcor
         mMeshLights.clear();
         mpSamplerState = nullptr;
         mTriangleCount = 0;
-
         // Create mesh lights for all emissive mesh instances.
         for (uint32_t instanceID = 0; instanceID < scene.getGeometryInstanceCount(); instanceID++)
         {
@@ -188,7 +187,6 @@ namespace Falcor
 
             // We only support triangle meshes.
             if (instanceData.getType() != GeometryType::TriangleMesh) continue;
-
             const MeshDesc& meshData = scene.getMesh(MeshID::fromSlang( instanceData.geometryID ));
 
             // Only mesh lights with basic materials are supported.

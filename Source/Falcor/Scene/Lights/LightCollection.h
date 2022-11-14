@@ -27,6 +27,7 @@
  **************************************************************************/
 #pragma once
 #include "MeshLightData.slang"
+
 #include "Core/Macros.h"
 #include "Core/API/Buffer.h"
 #include "Core/API/Sampler.h"

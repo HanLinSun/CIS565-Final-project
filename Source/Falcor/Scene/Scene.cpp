@@ -311,6 +311,7 @@ namespace Falcor
         return mpMaterials->getShaderModules();
     }
 
+    
     const LightCollection::SharedPtr& Scene::getLightCollection(RenderContext* pContext)
     {
         if (!mpLightCollection)
@@ -322,6 +323,68 @@ namespace Falcor
         }
         return mpLightCollection;
     }
+
+    //====================== Add ==============================
+    namespace
+    {
+        //const char kEmissiveIntegratorFile[] = "Scene/Lights/EmissiveIntegrator.3d.slang";
+        const char kBuildTriangleListFile[] = "ObjectBVH/BuildObjectTriangleList.cs.slang";
+        const char kUpdateTriangleVerticesFile[] = "ObjectBVH/UpdateObjectTriangleVert.cs.slang";
+    }
+
+    void Scene::initBuffer()
+    {
+        //Could have problem here
+        const std::shared_ptr<Scene>& pScene = std::make_shared<Scene>(this);
+        // Imitate writing method
+        FALCOR_ASSERT(pScene);
+
+        Shader::DefineList defines = pScene->getSceneDefines();
+        //create triangle builder
+        mpMeshObjTriangleListBuilder = ComputePass::create(kBuildTriangleListFile, "buildTriangleList", defines);
+        mpMeshObjTrianglePositionUpdater = ComputePass::create(kUpdateTriangleVerticesFile, "updateTriangleVertices", defines);
+        mpObjectStagingFence = GpuFence::create();
+    }
+
+    void Scene::createMeshObjData()
+    {
+        // Create buffer for the mesh data if needed.
+        //better not modify mMeshDesc, use other instead
+        if (!mMeshInstance.empty())
+        {
+            mpMeshObjData = Buffer::createStructured(
+            mpMeshObjTrianglePositionUpdater["gMeshData"],
+            uint32_t(mMeshInstance.size()),
+            ResourceBindFlags::ShaderResource,
+            Buffer::CpuAccess::None, nullptr, false);
+            mpMeshObjData->setName("Scene::mpMeshObjData");
+            if (mpMeshObjData->getStructSize() != sizeof(MeshLightData))
+            {
+                throw RuntimeError("Size mismatch for structured buffer of MeshObjData");
+            }
+            size_t meshObjDataSize = mMeshInstance.size() * sizeof(mMeshInstance[0]);
+            FALCOR_ASSERT(mpMeshObjData->getSize() == meshObjDataSize);
+            mpMeshObjData->setBlob(mMeshInstance.data(), 0, meshObjDataSize);
+        }
+
+        // Build a lookup table from instance ID to emissive triangle offset.
+        // This is useful in ray tracing for locating the emissive triangle that was hit for MIS computation etc.
+        uint32_t instanceCount =this->getGeometryInstanceCount();
+        if (instanceCount > 0)
+        {
+            std::vector<uint32_t> triangleOffsets(instanceCount, MeshInstanceData::kInvalidIndex);
+            for (const auto& it : mMeshInstance)
+            {
+                FALCOR_ASSERT(it.instanceID < instanceCount);
+                triangleOffsets[it.instanceID] = it.triangleOffset;
+            }
+
+            mpPerMeshInstanceOffset = Buffer::createStructured(sizeof(uint32_t), (uint32_t)triangleOffsets.size(), Resource::BindFlags::ShaderResource, Buffer::CpuAccess::None, triangleOffsets.data(), false);
+            mpPerMeshInstanceOffset->setName("LightCollection::mpPerMeshInstanceOffset");
+        }
+    }
+
+    //===================== End Add ============================
 
     void Scene::rasterize(RenderContext* pContext, GraphicsState* pState, GraphicsVars* pVars, RasterizerState::CullMode cullMode)
     {

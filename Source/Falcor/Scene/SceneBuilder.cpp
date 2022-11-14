@@ -299,7 +299,7 @@ namespace Falcor
         sortMeshes();
         createGlobalBuffers();
         createCurveGlobalBuffers();
-        collectVolumeGrids();
+        collectVolumeGrids(); 
         removeDuplicateSDFGrids();
 
         timeReport.measure("Post processing geometry");
