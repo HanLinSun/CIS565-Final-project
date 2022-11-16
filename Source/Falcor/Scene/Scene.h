@@ -1223,6 +1223,7 @@ namespace Falcor
 
         //Scene Mesh BVH
         std::vector<MeshInstanceData> mMeshInstance;
+
         std::vector<MeshObjectTriangle> mSceneTriangleList;   ///< store all triangle in the scene for building BVH Tree.
         std::vector<uint32_t> mMeshObjectActiveTriangles;
         std::vector<uint32_t> mMeshObjectTriangleToActiveList;       ///< Mapping of all light triangles to index in mActiveTriangleList.
@@ -1232,7 +1233,8 @@ namespace Falcor
         Buffer::SharedPtr     mMeshObjTriangleData;         ///< Per-triangle geometry data for mesh triangles (mMeshObjTriangleCount elements).
         Buffer::SharedPtr     mpMeshObjActiveTriangleList;   ///< List of active (non-culled) emissive triangle.
         Buffer::SharedPtr     mpMeshObjToActiveList;      ///< Mapping of all light triangles to index in mActiveTriangleList.
-        Buffer::SharedPtr     mpMeshObjData;
+        Buffer::SharedPtr     mpMeshObjData;    
+        Buffer::SharedPtr     mpPerMeshInstanceOffset; ///< Per-mesh instance offset into emissive triangles array (Scene::getMeshInstanceCount() elements).
 
         ComputePass::SharedPtr  mpMeshObjTriangleListBuilder;
         ComputePass::SharedPtr  mpMeshObjTrianglePositionUpdater;
@@ -1240,7 +1242,7 @@ namespace Falcor
 
         void initBuffer(); //initiate compute shader pass
 
-        void buildTriangle();
+        void buildTriangleList();
         void createMeshObjData();
         void buildMeshObjTriangleData(RenderContext* pRenderContext,const Scene& scene);
         void updateActiveTriangleList();

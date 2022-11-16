@@ -7,7 +7,7 @@
 import Utils.Math.PackedFormats;
 #endif
 
-struct EmissiveTriangle
+struct Triangle
 {
     float3  posW[3];            ///< Per-vertex world-space positions.
     float2  texCoords[3];       ///< Per-vertex texture coordinates.
@@ -39,7 +39,3 @@ struct EmissiveTriangle
     }
 };
 
-[numthreads(1, 1, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
-{
-}

@@ -28,8 +28,8 @@ namespace Falcor
         MeshObjectVertex vtx[3];                             ///< Vertices. These are non-indexed for now.
 
         // Pre-computed quantities.
-        float3          normal = float3(0);                 ///< Triangle's face normal in world space.
-        float           area = 0.f;                         ///< Triangle area in world space units.
+        float3 normal = float3(0);                 ///< Triangle's face normal in world space.
+        float   area = 0.f;                         ///< Triangle area in world space units.
         /** Returns the center of the triangle in world space.
         */
         float3 getCenter() const

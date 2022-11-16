@@ -345,7 +345,10 @@ namespace Falcor
         mpMeshObjTrianglePositionUpdater = ComputePass::create(kUpdateTriangleVerticesFile, "updateTriangleVertices", defines);
         mpObjectStagingFence = GpuFence::create();
     }
+    void Scene::prepareMeshObjTriangleData()
+    {
 
+    }
     void Scene::createMeshObjData()
     {
         // Create buffer for the mesh data if needed.
@@ -380,7 +383,7 @@ namespace Falcor
             }
 
             mpPerMeshInstanceOffset = Buffer::createStructured(sizeof(uint32_t), (uint32_t)triangleOffsets.size(), Resource::BindFlags::ShaderResource, Buffer::CpuAccess::None, triangleOffsets.data(), false);
-            mpPerMeshInstanceOffset->setName("LightCollection::mpPerMeshInstanceOffset");
+            mpPerMeshInstanceOffset->setName("Scene::mpPerMeshInstanceOffset");
         }
     }
 
