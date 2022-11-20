@@ -30,9 +30,23 @@
 
 #include <regex>
 
+//============== Add =================
+#include "pathtrace.h"
+// =================================
+
 using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace dx12lib;
+
+//============= Add ==================
+
+void pathtraceInit(int width, int height,dx12lib::Scene* scene)
+{
+    int numPixel = width * height;
+    
+}
+
+//============= End ==================
 
 // Builds a look-at (world) matrix from a point, up and direction vectors.
 XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMVECTOR Up )
@@ -379,6 +393,7 @@ void Tutorial5::OnResize( ResizeEventArgs& e )
     m_SwapChain->Resize( m_Width, m_Height );
 }
 
+//Real loading part
 void Tutorial5::OnRender()
 {
     // This is done here to prevent the window switching to fullscreen while rendering the GUI.

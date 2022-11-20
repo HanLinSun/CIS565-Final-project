@@ -37,6 +37,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include "dx12lib/SceneStruct.h"
 
 class aiMaterial;
 class aiMesh;
@@ -113,6 +114,11 @@ private:
     MaterialMap  m_MaterialMap;
     MaterialList m_Materials;
     MeshList     m_Meshes;
+
+    //============== Added by Hanlin ====================
+    std::vector<Triangle> m_MeshTrianglefaces;
+
+    //============== End ===============
 
     std::shared_ptr<SceneNode> m_RootNode;
 

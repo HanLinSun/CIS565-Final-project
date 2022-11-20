@@ -11,6 +11,7 @@
 #include <dx12lib/VertexTypes.h>
 #include <dx12lib/Visitor.h>
 
+
 using namespace dx12lib;
 
 // A progress handler for Assimp
@@ -353,7 +354,7 @@ void Scene::ImportMesh( CommandList& commandList, const aiMesh& aiMesh )
         for ( i = 0; i < aiMesh.mNumFaces; ++i )
         {
             const aiFace& face = aiMesh.mFaces[i];
-
+            Triangle triangleFace;
             // Only extract triangular faces
             if ( face.mNumIndices == 3 )
             {
@@ -361,6 +362,24 @@ void Scene::ImportMesh( CommandList& commandList, const aiMesh& aiMesh )
                 indices.push_back( face.mIndices[1] );
                 indices.push_back( face.mIndices[2] );
             }
+            //============ Push Triangle Face ===========
+            triangleFace.point_0 = vertexData[face.mIndices[0]].Position;
+            triangleFace.point_1 = vertexData[face.mIndices[1]].Position;
+            triangleFace.point_2 = vertexData[face.mIndices[2]].Position;
+
+            triangleFace.normal_0 = vertexData[face.mIndices[0]].Normal;
+            triangleFace.normal_1 = vertexData[face.mIndices[1]].Normal;
+            triangleFace.normal_2 = vertexData[face.mIndices[2]].Normal;
+           
+            //DirectX when adding two vector, need to copy them to XMVector, after add then copy back to XMFLOAT3
+            XMVECTOR triPoint0 = XMLoadFloat3(&triangleFace.point_0);
+            XMVECTOR triPoint1 = XMLoadFloat3(&triangleFace.point_1);
+            XMVECTOR triPoint2 = XMLoadFloat3(&triangleFace.point_2);
+
+            XMVECTOR centroid = (triPoint0 + triPoint1 + triPoint2) / 3.f;
+
+            XMStoreFloat3(&triangleFace.centroid,centroid);
+            // =========== End ====================
         }
 
         if ( indices.size() > 0 )
