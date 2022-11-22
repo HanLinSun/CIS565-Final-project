@@ -2,6 +2,7 @@
 #include <camera.h>
 #include <vector>
 #include <string>
+#include <dx12lib/CommandList.h>
 #include <DirectXMath.h>
 
 #include "dx12lib/Scene.h"
@@ -26,10 +27,41 @@ struct RenderState
     std::string            imageName;
 };
 
-struct Ray
+enum PTRootParams : UINT32
 {
-    DirectX::XMVECTOR origin;
-    DirectX::XMVECTOR direction;
+    PTParams_StandardDescriptors,
+    PTParams_SceneDescriptor,
+    PTParams_UAVDescriptor,
+    PTParams_CBuffer,
+    PTParams_LightCBuffer,
+    PTParams_AppSettings,
+
+    NumRTRootParams
+};
+
+struct PathTraceConstants
+{
+   DirectX::XMFLOAT4X4 InverseViewProjection;
+
+   //DirectX::XMFLOAT3 SunDirectionWS;
+   // float CosSunAngularRadius = 0.0f;
+   // DirectX::XMFLOAT3 SunIrradiance;
+   // float SinSunAngularRadius = 0.0f;
+   // DirectX::XMFLOAT3 SunRenderColor;
+
+   UINT32 Padding = 0;
+
+    DirectX::XMFLOAT3 CameraPosWorldSpace;
+
+    UINT32 CurrSampleIdx = 0;
+    UINT32 TotalNumPixels = 0;
+
+    UINT32 VtxBufferIdx = UINT32(-1);
+    UINT32 IdxBufferIdx = UINT32(-1);
+    UINT32 GeometryInfoBufferIdx = UINT32(-1);
+    UINT32 MaterialBufferIdx = UINT32(-1);
+    UINT32 SkyTextureIdx = UINT32(-1);
+    UINT32 NumLights = 0;
 };
 
 struct PBRMaterial
@@ -46,13 +78,6 @@ struct PBRMaterial
     float emittance;
 };
 
-struct PathSegment
-{
-    Ray       ray;
-    DirectX::XMVECTOR color;
-    int       pixelIndex;
-    int       remainingBounces;
-};
 
 // Use with a corresponding PathSegment to do:
 // 1) color contribution computation
@@ -83,8 +108,9 @@ struct alignas(16) Matrices
 enum RootParameters
 {
     //constant buffer
-    PathSegmentCB,
-    Textures
+    MatricesCB,
+    Textures,
+    NumRootParameters
 };
 
 struct alignas(16) MVP
@@ -94,18 +120,25 @@ struct alignas(16) MVP
     DirectX::XMMATRIX Projection;
 };
 
+void pathtraceInit(int width, int height, dx12lib::Scene* scene);
+void createPipelineStateObject();
 
 //Pipeline
 PathTracePipeline(std::shared_ptr<dx12lib::Device> device);
+void Apply(dx12lib::CommandList& commandList) {};
 
 private:
      std::shared_ptr<dx12lib::Device>              m_Device;
      std::shared_ptr<dx12lib::RootSignature>       m_RootSignature;
      std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject;
+     // An SRV used pad unused texture slots.
+     std::shared_ptr<dx12lib::ShaderResourceView> m_DefaultSRV;
 
      dx12lib::CommandList* m_pPreviousCommandList;
 
-    void pathtraceInit(int width, int height, dx12lib::Scene* scene);
+
+    //Pathtrace Pipeline State Object
+
 };
 
 

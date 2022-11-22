@@ -95,6 +95,9 @@ protected:
      */
     void OnRender();
 
+    //Path trace calling function
+    void OnPathTrace();
+
     /**
      * Invoked by the registered window when a key is pressed
      * while the window has focus.
