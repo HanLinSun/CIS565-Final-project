@@ -176,3 +176,21 @@ void PathTracePipeline::pathtraceInit(int width, int height, dx12lib::Scene* sce
 
 	//Remember to set ray trace camera as scene camera
 }
+
+uint32_t PathTracePipeline::Run()
+{
+	LoadContent();
+	// Only show the window after content has been loaded.
+	m_Window->Show();
+	auto retCode = GameFramework::Get().Run();
+	// Make sure the loading task is finished
+	m_LoadingTask.get();
+
+	UnloadContent();
+	return retCode;
+}
+
+void PathTracePipeline::createPipelineStateObject()
+{
+
+}

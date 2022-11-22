@@ -4,6 +4,10 @@
 #include <string>
 #include <dx12lib/CommandList.h>
 #include <DirectXMath.h>
+#include <future>
+#include <GameFramework/GameFramework.h>
+#include <dx12lib/RenderTarget.h>
+
 
 #include "dx12lib/Scene.h"
 
@@ -122,12 +126,23 @@ struct alignas(16) MVP
 
 void pathtraceInit(int width, int height, dx12lib::Scene* scene);
 void createPipelineStateObject();
-
+uint32_t Run();
 //Pipeline
 PathTracePipeline(std::shared_ptr<dx12lib::Device> device);
 void Apply(dx12lib::CommandList& commandList) {};
 
 private:
+
+
+    dx12lib::RenderTarget m_RenderTarget;
+    std::atomic_bool  m_IsLoading;
+    std::future<bool> m_LoadingTask;
+    float             m_LoadingProgress;
+    std::string       m_LoadingText;
+
+    std::shared_ptr<Window> m_Window;
+
+    // Ray tracing resources
      std::shared_ptr<dx12lib::Device>              m_Device;
      std::shared_ptr<dx12lib::RootSignature>       m_RootSignature;
      std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject;
