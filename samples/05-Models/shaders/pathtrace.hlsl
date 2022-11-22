@@ -1,5 +1,8 @@
-
+#include "pathtraceHeader.hlsli"
 //Random seed generation
+
+RWTexture2D<float4> RenderTarget;
+
 unsigned int utilhash(unsigned int a)
 {
     a = (a + 0x7ed55d16) + (a << 12);
@@ -32,6 +35,6 @@ void getPointonRay(const Ray &r,float t)
 }
 
 [numthreads(1, 1, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main( uint3 DTid : SV_DispatchThreadID ):SV_Target
 {
 }

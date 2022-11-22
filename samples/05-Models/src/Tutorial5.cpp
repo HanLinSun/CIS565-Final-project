@@ -40,9 +40,8 @@ using namespace dx12lib;
 
 //============= Add ==================
 
-void pathtraceInit(int width, int height,dx12lib::Scene* scene)
+PathTracePipeline::PathTracePipeline(std::shared_ptr<dx12lib::Device> device)
 {
-    int numPixel = width * height;
     
 }
 
