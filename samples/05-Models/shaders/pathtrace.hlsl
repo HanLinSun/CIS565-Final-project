@@ -13,12 +13,13 @@
 //=================================================================================================
 #include <DescriptorTables.hlsl>
 #include <Constants.hlsl>
-#include <Quaternion.hlsl>
-#include <BRDF.hlsl>
-#include <RayTracing.hlsl>
-#include <Sampling.hlsl>
-#include "SharedTypes.h"
+#include "Quaternion.hlsl"
+#include "BRDF.hlsl"
+#include "RayTracing.hlsl"
+#include "Sampling.hlsl"
+
 #include "AppSettings.hlsl"
+
 
 
 struct RayTraceConstants
@@ -80,6 +81,11 @@ enum RayTypes
     NumRayTypes
 };
 
+void RayTrace()
+{
+    
+}
+
 static float2 SamplePoint(in uint pixelIdx, inout uint setIdx)
 {
     const uint permutation = setIdx * RayTraceCB.TotalNumPixels + pixelIdx;
@@ -133,6 +139,8 @@ void RaygenShader()
     const uint hitGroupOffset = RayTypeRadiance;
     const uint hitGroupGeoMultiplier = NumRayTypes;
     const uint missShaderIdx = RayTypeRadiance;
+    
+    //Need to replace this
     TraceRay(Scene, traceRayFlags, 0xFFFFFFFF, hitGroupOffset, hitGroupGeoMultiplier, missShaderIdx, ray, payload);
 
     payload.Radiance = clamp(payload.Radiance, 0.0f, FP16Max);

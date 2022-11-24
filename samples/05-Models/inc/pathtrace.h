@@ -96,10 +96,32 @@ struct ShadeableIntersection
 class PathTracePipeline
 {
 public:    
+
 struct LightProperties
 {
     uint32_t NumAreaLights;
     uint32_t NumPointLights;
+};
+
+struct RayTraceConstants
+{
+    Float4x4 InvViewProjection;
+    Float3 SunDirectionWS;
+    float CosSunAngularRadius = 0.0f;
+    Float3 SunIrradiance;
+    float SinSunAngularRadius = 0.0f;
+    Float3 SunRenderColor;
+    uint32 Padding = 0;
+    Float3 CameraPosWS;
+    uint32 CurrSampleIdx = 0;
+    uint32 TotalNumPixels = 0;
+
+    uint32 VtxBufferIdx = uint32(-1);
+    uint32 IdxBufferIdx = uint32(-1);
+    uint32 GeometryInfoBufferIdx = uint32(-1);
+    uint32 MaterialBufferIdx = uint32(-1);
+    uint32 SkyTextureIdx = uint32(-1);
+    uint32 NumLights = 0;
 };
 
 struct alignas(16) Matrices
@@ -132,9 +154,9 @@ void PathtraceInit();
 void CreatePathTracePipelineStateObject();
 //Windows callback function
 void Render();
-
+void CreateRenderTargets();
 void OnResize(ResizeEventArgs& e);
-void OnUpdate();
+void OnUpdate(UpdateEventArgs& e);
 
 
 void OnKeyPressed(KeyEventArgs& e);
@@ -169,7 +191,18 @@ private:
     bool              m_CancelLoading;
     std::string       m_LoadingText;
 
-    Model sceneModels[uint64(Scenes::NumValues)];
+    Model sceneModels;
+    MeshRenderer meshRenderer;
+    DepthBuffer depthBuffer;
+
+    Array<SpotLight> spotLights;
+    SampleFramework12:: ConstantBuffer spotLightBuffer;
+    SampleFramework12::StructuredBuffer spotLightBoundsBuffer;
+    SampleFramework12::StructuredBuffer spotLightInstanceBuffer;
+    RawBuffer spotLightClusterBuffer;
+    uint64 numIntersectingSpotLights = 0;
+
+    RenderTexture rtTarget;
 
     const Model* currentModel = nullptr;
 
@@ -181,6 +214,9 @@ private:
 
     // Ray tracing resources
     CompiledShaderPtr pathTraceShader;
+    uint32 rtCurrSampleIdx = 0;
+    RawBuffer rtBottomLevelAccelStructure;
+    RawBuffer rtTopLevelAccelStructure;
 
      //Pathtrace Pipeline State Object
      std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject;

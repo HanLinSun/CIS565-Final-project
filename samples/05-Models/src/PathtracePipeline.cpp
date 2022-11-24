@@ -25,7 +25,104 @@ using namespace Microsoft::WRL;
 
 #define ArraySize_(x) ((sizeof(x) / sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
+void PathTracePipeline::Render()
+{
+	// Don't keep tracing rays if we've hit our maximum per-pixel sample count
+	if (rtCurrSampleIdx >= uint32(AppSettings::SqrtNumSamples * AppSettings::SqrtNumSamples))
+		return;
 
+	ID3D12GraphicsCommandList4* cmdList = DX12::CmdList;
+	cmdList->SetComputeRootSignature(m_RootSignature->GetD3D12RootSignature().Get());
+
+	DX12::BindGlobalSRVDescriptorTable(cmdList, PTParams_StandardDescriptors, CmdListMode::Compute);
+
+	cmdList->SetComputeRootShaderResourceView(PTParams_SceneDescriptor, rtTopLevelAccelStructure.GPUAddress);
+	DX12::BindTempDescriptorTable(cmdList, &rtTarget.UAV, 1, PTParams_UAVDescriptor, CmdListMode::Compute);
+
+	RayTraceConstants rtConstants;
+	CXMMATRIX viewMat = m_Camera.get_ViewMatrix();
+	//Convert
+	Float4x4 viewMatrix = Float4x4(viewMat);
+	rtConstants.InvViewProjection = Float4x4::Invert(viewMatrix);
+
+	//rtConstants.SunDirectionWS = AppSettings::SunDirection;
+	//rtConstants.SunIrradiance = skyCache.SunIrradiance;
+	//rtConstants.CosSunAngularRadius = std::cos(DegToRad(AppSettings::SunSize));
+	//rtConstants.SinSunAngularRadius = std::sin(DegToRad(AppSettings::SunSize));
+	//rtConstants.SunRenderColor = skyCache.SunRenderColor;
+	FXMVECTOR cameraPos = m_Camera.get_Translation();
+	rtConstants.CameraPosWS = Float3(cameraPos);
+	rtConstants.CurrSampleIdx = rtCurrSampleIdx;
+	rtConstants.TotalNumPixels = uint32(rtTarget.Width()) * uint32(rtTarget.Height());
+
+	rtConstants.VtxBufferIdx = currentModel->VertexBuffer().SRV;
+	rtConstants.IdxBufferIdx = currentModel->IndexBuffer().SRV;
+	rtConstants.GeometryInfoBufferIdx = rtGeoInfoBuffer.SRV;
+	rtConstants.MaterialBufferIdx = meshRenderer.MaterialBuffer().SRV;
+	//rtConstants.SkyTextureIdx = skyCache.CubeMap.SRV;
+	rtConstants.NumLights = Min<uint32>(uint32(spotLights.Size()), AppSettings::MaxLightClamp);
+
+	DX12::BindTempConstantBuffer(cmdList, rtConstants, PTParams_CBuffer, CmdListMode::Compute);
+	spotLightBuffer.SetAsComputeRootParameter(cmdList, PTParams_LightCBuffer);
+	AppSettings::BindCBufferCompute(cmdList, PTParams_AppSettings);
+	rtTarget.MakeWritableUAV(cmdList);
+	cmdList->SetPipelineState1(rtPSO);
+	D3D12_DISPATCH_RAYS_DESC dispatchDesc = {};
+	dispatchDesc.HitGroupTable = rtHitTable.ShaderTable();
+	dispatchDesc.MissShaderTable = rtMissTable.ShaderTable();
+	dispatchDesc.RayGenerationShaderRecord = rtRayGenTable.ShaderRecord(0);
+	dispatchDesc.Width = uint32(rtTarget.Width());
+	dispatchDesc.Height = uint32(rtTarget.Height());
+	dispatchDesc.Depth = 1;
+	DX12::CmdList->DispatchRays(&dispatchDesc);
+	rtTarget.MakeReadableUAV(cmdList);
+	rtCurrSampleIdx += 1;
+}
+void PathTracePipeline::OnUpdate(UpdateEventArgs& e)
+{
+
+	m_SwapChain->WaitForSwapChain();
+
+	// Process keyboard, mouse, and pad input.
+	GameFramework::Get().ProcessInput();
+	m_CameraController.Update(e);
+
+	// Move the Axis model to the focal point of the camera.
+	XMVECTOR cameraPoint = m_Camera.get_FocalPoint();
+	XMMATRIX translationMatrix = XMMatrixTranslationFromVector(cameraPoint);
+	XMMATRIX scaleMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f);
+
+	XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
+
+	const int numDirectionalLights = 3;
+
+	//static const XMVECTORF32 LightColors[] = { Colors::White, Colors::OrangeRed, Colors::Blue };
+
+	static float lightAnimTime = 0.0f;
+	const float radius = 1.0f;
+	float       directionalLightOffset = numDirectionalLights > 0 ? 2.0f * XM_PI / numDirectionalLights : 0;
+
+	//m_DirectionalLights.resize(numDirectionalLights);
+	//for (int i = 0; i < numDirectionalLights; ++i)
+	//{
+	//	DirectionalLight& l = m_DirectionalLights[i];
+
+	//	float angle = lightAnimTime + directionalLightOffset * i;
+
+	//	XMVECTORF32 positionWS = { static_cast<float>(std::cos(angle)) * radius,
+	//							   static_cast<float>(std::sin(angle)) * radius, radius, 1.0f };
+
+	//	XMVECTOR directionWS = XMVector3Normalize(XMVectorNegate(positionWS));
+	//	XMVECTOR directionVS = XMVector3TransformNormal(directionWS, viewMatrix);
+
+	//	XMStoreFloat4(&l.DirectionWS, directionWS);
+	//	XMStoreFloat4(&l.DirectionVS, directionVS);
+
+	//	l.Color = XMFLOAT4(LightColors[i]);
+	//}
+
+	Render();
+}
 
 void PathTracePipeline::OnKeyPressed(KeyEventArgs& e)
 {
@@ -52,6 +149,7 @@ void PathTracePipeline::OnKeyPressed(KeyEventArgs& e)
 		}
 	}
 }
+
 
 void PathTracePipeline::OnResize(ResizeEventArgs& e)
 {
@@ -84,7 +182,6 @@ struct HitGroupRecord
 
 void PathTracePipeline::LoadContent()
 {
-	
 	m_Device = dx12lib::Device::Create();
 	m_Logger->info(L"Device created: {}", m_Device->GetDescription());
 
@@ -98,8 +195,6 @@ void PathTracePipeline::LoadContent()
 	// Start the loading task to perform async loading of the scene file.
 	m_LoadingTask = std::async(std::launch::async, std::bind(&PathTracePipeline::InitScene, this,
 		L"Assets/Models/crytek-sponza/sponza_nobanner.obj"));
-
-
 
 	// Load a few (procedural) models to represent the light sources in the scene.
 	auto& commandQueue = m_Device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
@@ -169,23 +264,33 @@ bool PathTracePipeline::InitScene(const std::wstring& sceneFile)
 	AppSettings::EnableWhiteFurnaceMode.SetValue(currSceneIdx == uint64(Scenes::TestBuilding));
 
 	// Load the scene (if necessary)
-	if (sceneModels[currSceneIdx].NumMeshes() == 0)
+	static const float SceneScales=1.0f;
+
+
+	//Hardcode
+	const wchar* texturePath= L"\\Assets\\Models\\crytek - sponza\\textures";
+
+	if (sceneModels.NumMeshes() == 0)
 	{
 		if (currSceneIdx == uint64(Scenes::BoxTest) || sceneFile.c_str() == nullptr)
 		{
-			sceneModels[currSceneIdx].GenerateBoxTestScene();
+			sceneModels.GenerateBoxTestScene();
+
 		}
 		else
 		{
 			ModelLoadSettings settings;
 			settings.FilePath = sceneFile.c_str();
-			settings.TextureDir = SceneTextureDirs[currSceneIdx];
+			settings.TextureDir = texturePath;
 			settings.ForceSRGB = true;
-			settings.SceneScale = SceneScales[currSceneIdx];
+			settings.SceneScale = SceneScales;
 			settings.MergeMeshes = false;
-			sceneModels[currSceneIdx].CreateWithAssimp(settings);
+			sceneModels.CreateWithAssimp(settings);
 		}
 	}
+
+	DirectX::BoundingSphere s;
+	BoundingSphere::CreateFromBoundingBox(s, scene->GetAABB());
 
 	currentModel = &sceneModels[currSceneIdx];
 	DX12::FlushGPU();
@@ -197,6 +302,8 @@ bool PathTracePipeline::InitScene(const std::wstring& sceneFile)
 
 	auto cameraPosition = XMVectorSet(0, 0, -distanceToObject, 1);
 	//        cameraPosition      = XMVector3Rotate( cameraPosition, cameraRotation );
+	auto scale = 50.0f / (s.Radius * 2.0f);
+	s.Radius *= scale;
 	auto focusPoint = XMVectorSet(s.Center.x * scale, s.Center.y * scale, s.Center.z * scale, 1.0f);
 	cameraPosition = cameraPosition + focusPoint;
 
@@ -335,6 +442,64 @@ uint32_t PathTracePipeline::Run()
 	// Make sure the loading task is finished
 	m_LoadingTask.get();
 	return retCode;
+}
+void PathTracePipeline::CreateRenderTargets()
+{
+	//uint32 width = m_SwapChain->Width();
+	//uint32 height = m_SwapChain.Height();
+	
+	uint32 width = m_Width;
+	uint32 height = m_Height;
+	const uint32 NumSamples = AppSettings::NumMSAASamples();
+
+	//if (NumSamples > 1)
+	//{
+	//	RenderTextureInit rtInit;
+	//	rtInit.Width = width;
+	//	rtInit.Height = height;
+	//	rtInit.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	//	rtInit.MSAASamples = 1;
+	//	rtInit.ArraySize = 1;
+	//	rtInit.CreateUAV = false;
+	//	rtInit.InitialState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	//	rtInit.Name = L"Resolve Target";
+	//	resolveTarget.Initialize(rtInit);
+	//}
+
+	{
+		DepthBufferInit dbInit;
+		dbInit.Width = width;
+		dbInit.Height = height;
+		dbInit.Format = DXGI_FORMAT_D32_FLOAT;
+		dbInit.MSAASamples = NumSamples;
+		dbInit.Name = L"Main Depth Buffer";
+		depthBuffer.Initialize(dbInit);
+	}
+
+	AppSettings::NumXTiles = (width + (AppSettings::ClusterTileSize - 1)) / AppSettings::ClusterTileSize;
+	AppSettings::NumYTiles = (height + (AppSettings::ClusterTileSize - 1)) / AppSettings::ClusterTileSize;
+	const uint64 numXYZTiles = AppSettings::NumXTiles * AppSettings::NumYTiles * AppSettings::NumZTiles;
+
+	{
+		// Spotlight cluster bitmask buffer
+		RawBufferInit rbInit;
+		rbInit.NumElements = numXYZTiles * AppSettings::SpotLightElementsPerCluster;
+		rbInit.CreateUAV = true;
+		rbInit.InitialState = D3D12_RESOURCE_STATE_COMMON;
+		rbInit.Name = L"Spot Light Cluster Buffer";
+		spotLightClusterBuffer.Initialize(rbInit);
+	}
+
+	{
+		RenderTextureInit rtInit;
+		rtInit.Width = width;
+		rtInit.Height = height;
+		rtInit.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		rtInit.CreateUAV = true;
+		rtInit.Name = L"RT Target";
+		rtTarget.Initialize(rtInit);
+	}
+
 }
 
 void PathTracePipeline::CreatePathTracePipelineStateObject()

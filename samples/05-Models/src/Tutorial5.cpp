@@ -27,9 +27,6 @@
 
 #include <ShObjIdl.h>  // For IFileOpenDialog
 #include <shlwapi.h>
-#include <ShObjIdl.h>  // For IFileOpenDialog
-#include <shlwapi.h>
-
 #include <regex>
 
 //============== Add =================
@@ -66,7 +63,6 @@ XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMV
 
 // A regular express used to extract the relavent part of an Assimp log message.
 static const std::regex gs_AssimpLogRegex( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
-
 template<spdlog::level::level_enum lvl>
 class LogStream : public Assimp::LogStream
 {
