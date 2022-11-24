@@ -6,8 +6,10 @@
 #include <d3d12.h>
 #include <dx12lib/Material.h>
 #include <Assert.h>
+
 #include <Graphics/DX12_Helpers.h>
 #include <Graphics/DXRHelper.h>
+
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/VertexTypes.h>
@@ -18,10 +20,13 @@
 #include <d3dcompiler.h>
 #include <ShObjIdl.h>  // For IFileOpenDialog
 #include <shlwapi.h>
+#include <d3dx12.h>
 
 #include "../../../DX12Lib/src/GUI.cpp"
+using namespace placeholders;
 
 using namespace Microsoft::WRL;
+using namespace DirectX;
 
 #define ArraySize_(x) ((sizeof(x) / sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 

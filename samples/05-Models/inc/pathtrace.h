@@ -16,6 +16,7 @@
 #include "dx12lib/Scene.h"
 #include <Graphics/GraphicsTypes.h>
 #include <Graphics/ShaderCompilation.h>
+#include <memory>
 
 using namespace SampleFramework12;
 

@@ -17,10 +17,7 @@
 #include "BRDF.hlsl"
 #include "RayTracing.hlsl"
 #include "Sampling.hlsl"
-
 #include "AppSettings.hlsl"
-
-
 
 struct RayTraceConstants
 {
@@ -81,10 +78,6 @@ enum RayTypes
     NumRayTypes
 };
 
-void RayTrace()
-{
-    
-}
 
 static float2 SamplePoint(in uint pixelIdx, inout uint setIdx)
 {
@@ -321,6 +314,7 @@ static float3 PathTrace(in MeshVertex hitSurface, in Material material, in Prima
         }
     }
 
+    
     // Choose our next path by importance sampling our BRDFs
     float2 brdfSample = SamplePoint(inPayload.PixelIdx, inPayload.SampleSetIdx);
 

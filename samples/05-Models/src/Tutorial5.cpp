@@ -17,7 +17,7 @@
 #include <dx12lib/SceneNode.h>
 #include <dx12lib/SwapChain.h>
 #include <dx12lib/Texture.h>
-
+#include <assert.h>
 #include <assimp/DefaultLogger.hpp>
 
 #include <DirectXColors.h>
@@ -28,9 +28,9 @@
 #include <ShObjIdl.h>  // For IFileOpenDialog
 #include <shlwapi.h>
 #include <regex>
+#include <PCH.h>
 
 //============== Add =================
-#include "pathtrace.h"
 // =================================
 
 using namespace Microsoft::WRL;
