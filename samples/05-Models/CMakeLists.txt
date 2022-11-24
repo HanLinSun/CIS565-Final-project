@@ -9,6 +9,9 @@ set( HEADER_FILES
     inc/Light.h
     inc/SceneVisitor.h
     inc/Tutorial5.h
+    inc/AppSettings.h
+    inc/pathtrace.h
+    inc/SceneStruct.h
 )
 
 set( SRC_FILES
@@ -19,6 +22,8 @@ set( SRC_FILES
     src/main.cpp
     src/SceneVisitor.cpp
     src/Tutorial5.cpp
+    src/PathtracePipeline.cpp
+    src/AppSettings.cpp
 )
 
 set( VERTEX_SHADERS 
@@ -33,6 +38,15 @@ set( PIXEL_SHADERS
 
 set( SHADER_INCLUDES
     shaders/Base_PS.hlsli
+    shaders/BRDF.hlsl
+    shaders/Clusters.hlsl
+    shaders/RayTracing.hlsl
+    shaders/Quaternion.hlsl
+    shaders/SampleFunction.hlsl
+    shaders/Constants.hlsl
+    shaders/AppSettings.hlsl
+    shaders/DescriptorTables.hlsl
+    
 )
 
 set( SHADERS
@@ -74,6 +88,7 @@ target_include_directories( ${TARGET_NAME}
 
 target_link_libraries( ${TARGET_NAME}
     GameFramework
+    SampleFramework12
     DX12Lib
     assimp
     d3dcompiler.lib

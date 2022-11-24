@@ -193,7 +193,7 @@ private:
     std::string       m_LoadingText;
 
     Model sceneModels;
-    MeshRenderer meshRenderer;
+    //MeshRenderer meshRenderer;
     DepthBuffer depthBuffer;
 
     Array<SpotLight> spotLights;
