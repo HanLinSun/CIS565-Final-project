@@ -164,9 +164,6 @@ private:
     std::shared_ptr<EffectPSO> m_DecalPSO;
     std::shared_ptr<EffectPSO> m_UnlitPSO;
 
-    //============== Hanlin ===============
-    std::shared_ptr<EffectPSO> m_rayTracePSO;
-    //============== End =================
 
     // Render target
     dx12lib::RenderTarget m_RenderTarget;

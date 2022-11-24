@@ -27,6 +27,8 @@
 
 #include <ShObjIdl.h>  // For IFileOpenDialog
 #include <shlwapi.h>
+#include <ShObjIdl.h>  // For IFileOpenDialog
+#include <shlwapi.h>
 
 #include <regex>
 
@@ -39,11 +41,6 @@ using namespace DirectX;
 using namespace dx12lib;
 
 //============= Add ==================
-
-PathTracePipeline::PathTracePipeline(std::shared_ptr<dx12lib::Device> device)
-{
-    
-}
 
 //============= End ==================
 

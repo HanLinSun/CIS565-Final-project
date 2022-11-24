@@ -34,6 +34,7 @@
 #  endif
 #  include <io.h>
 #endif
+#include <assert.h>
 
 #ifdef _MSC_VER
 #  pragma warning(push)

@@ -1,15 +1,23 @@
 #pragma once
 #include <camera.h>
+#include <CameraController.h>
 #include <vector>
 #include <string>
 #include <dx12lib/CommandList.h>
+#include <Graphics/Model.h>
+#include <Graphics/GraphicsTypes.h>
 #include <DirectXMath.h>
 #include <future>
 #include <GameFramework/GameFramework.h>
+#include <GameFramework/Window.h>
 #include <dx12lib/RenderTarget.h>
-
-
+#include <dx12lib/SwapChain.h>
+#include <dx12lib/Device.h>
 #include "dx12lib/Scene.h"
+#include <Graphics/GraphicsTypes.h>
+#include <Graphics/ShaderCompilation.h>
+
+using namespace SampleFramework12;
 
 namespace dx12lib
 {
@@ -21,15 +29,6 @@ namespace dx12lib
     class ShaderResourceView;
     class Texture;
 }  // namespace dx12lib
-
-struct RenderState
-{
-    Camera                 camera;
-    unsigned int           iterations;
-    int                    traceDepth;
-    std::vector<DirectX::XMVECTOR> image;
-    std::string            imageName;
-};
 
 enum PTRootParams : UINT32
 {
@@ -43,6 +42,7 @@ enum PTRootParams : UINT32
     NumRTRootParams
 };
 
+// Shader pass
 struct PathTraceConstants
 {
    DirectX::XMFLOAT4X4 InverseViewProjection;
@@ -124,36 +124,73 @@ struct alignas(16) MVP
     DirectX::XMMATRIX Projection;
 };
 
-void pathtraceInit(int width, int height, dx12lib::Scene* scene);
-void createPipelineStateObject();
+void OpenFile();
+bool InitScene(const std::wstring& sceneFile);
+bool LoadingProgress(float loadingProgress);
+void LoadContent();
+void PathtraceInit();
+void CreatePathTracePipelineStateObject();
+//Windows callback function
+void Render();
+
+void OnResize(ResizeEventArgs& e);
+void OnUpdate();
+
+
+void OnKeyPressed(KeyEventArgs& e);
 uint32_t Run();
 //Pipeline
-PathTracePipeline(std::shared_ptr<dx12lib::Device> device);
+PathTracePipeline(std::shared_ptr<dx12lib::Device> device, int width, int height);
 void Apply(dx12lib::CommandList& commandList) {};
 
 private:
 
+    std::shared_ptr<Window> m_Window;
+
+    Camera           m_Camera;
+    CameraController m_CameraController;
+    Logger           m_Logger;
+
+    ID3D12StateObject* rtPSO = nullptr;
+    SampleFramework12::StructuredBuffer rtRayGenTable;
+    SampleFramework12::StructuredBuffer rtHitTable;
+    SampleFramework12::StructuredBuffer rtMissTable;
+    SampleFramework12::StructuredBuffer rtGeoInfoBuffer;
+
+    int  m_Width;
+    int  m_Height;
+    bool m_VSync;
 
     dx12lib::RenderTarget m_RenderTarget;
+
     std::atomic_bool  m_IsLoading;
     std::future<bool> m_LoadingTask;
     float             m_LoadingProgress;
+    bool              m_CancelLoading;
     std::string       m_LoadingText;
 
-    std::shared_ptr<Window> m_Window;
+    Model sceneModels[uint64(Scenes::NumValues)];
+
+    const Model* currentModel = nullptr;
+
+    std::shared_ptr<dx12lib::Device>              m_Device;
+    std::shared_ptr<dx12lib::GUI>       m_GUI;
+    std::shared_ptr<dx12lib::SwapChain> m_SwapChain;
+    // Global root signature with all of our normal bindings
+    std::shared_ptr<dx12lib::RootSignature>       m_RootSignature;
 
     // Ray tracing resources
-     std::shared_ptr<dx12lib::Device>              m_Device;
-     std::shared_ptr<dx12lib::RootSignature>       m_RootSignature;
+    CompiledShaderPtr pathTraceShader;
+
+     //Pathtrace Pipeline State Object
      std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject;
+     D3D12_VIEWPORT m_Viewport;
+     
      // An SRV used pad unused texture slots.
+     std::shared_ptr<dx12lib::Scene> m_Scene;
      std::shared_ptr<dx12lib::ShaderResourceView> m_DefaultSRV;
 
      dx12lib::CommandList* m_pPreviousCommandList;
-
-
-    //Pathtrace Pipeline State Object
-
 };
 
 

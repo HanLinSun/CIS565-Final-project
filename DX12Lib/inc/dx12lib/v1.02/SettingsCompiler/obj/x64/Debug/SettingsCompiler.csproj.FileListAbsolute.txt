@@ -1,0 +1,10 @@
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\bin\x64\Debug\SettingsCompiler.exe.config
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\bin\x64\Debug\SettingsCompiler.exe
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\bin\x64\Debug\SettingsCompiler.pdb
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\bin\x64\Debug\SettingsCompilerAttributes.dll
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\bin\x64\Debug\SettingsCompilerAttributes.pdb
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\obj\x64\Debug\SettingsCompiler.csproj.AssemblyReference.cache
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\obj\x64\Debug\SettingsCompiler.csproj.CoreCompileInputs.cache
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\obj\x64\Debug\SettingsCompiler.csproj.CopyComplete
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\obj\x64\Debug\SettingsCompiler.exe
+D:\CIS565\CIS565-Final-project\DX12Lib\SampleFramework12\v1.02\SettingsCompiler\obj\x64\Debug\SettingsCompiler.pdb
