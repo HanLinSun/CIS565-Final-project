@@ -50,6 +50,7 @@ void PathTracePipeline::Render()
 	//rtConstants.CosSunAngularRadius = std::cos(DegToRad(AppSettings::SunSize));
 	//rtConstants.SinSunAngularRadius = std::sin(DegToRad(AppSettings::SunSize));
 	//rtConstants.SunRenderColor = skyCache.SunRenderColor;
+
 	FXMVECTOR cameraPos = m_Camera.get_Translation();
 	rtConstants.CameraPosWS = Float3(cameraPos);
 	rtConstants.CurrSampleIdx = rtCurrSampleIdx;

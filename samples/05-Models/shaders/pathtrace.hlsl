@@ -11,7 +11,7 @@
 //=================================================================================================
 // Includes
 //=================================================================================================
-#include <DescriptorTables.hlsl>
+#include "DescriptorTables.hlsl"
 #include <Constants.hlsl>
 #include "Quaternion.hlsl"
 #include "BRDF.hlsl"
